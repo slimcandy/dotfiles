@@ -1,25 +1,10 @@
 {
-  "description": "Play a sound when Claude finishes or needs attention (macOS only)",
   "hooks": {
     "Stop": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "\"${CLAUDE_PLUGIN_ROOT}\"/scripts/sound.sh Hero"
-          }
-        ]
-      }
+      { "hooks": [{ "type": "command", "command": "afplay /System/Library/Sounds/Hero.aiff 2>/dev/null; exit 0" }] }
     ],
     "Notification": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "\"${CLAUDE_PLUGIN_ROOT}\"/scripts/sound.sh Blow"
-          }
-        ]
-      }
+      { "hooks": [{ "type": "command", "command": "afplay /System/Library/Sounds/Blow.aiff 2>/dev/null; exit 0" }] }
     ]
   }
 }

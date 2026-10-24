@@ -1,20 +1,23 @@
 #!/bin/sh
-# Bootstrap my Claude Code setup on a new machine.
+# Install or re-apply my Claude Code setup. Safe to run repeatedly.
 #   curl -fsSL https://raw.githubusercontent.com/slimcandy/claude-settings/main/install.sh | sh
 set -eu
-
-command -v claude >/dev/null 2>&1 || { echo "claude CLI not found" >&2; exit 1; }
-command -v node >/dev/null 2>&1 || { echo "node not found (needed for statusline and settings)" >&2; exit 1; }
 
 claude plugin marketplace add slimcandy/claude-settings || claude plugin marketplace update slimcandy
 claude plugin install kit@slimcandy --scope user
 
-# Locate the marketplace clone via known_marketplaces.json instead of guessing the folder name.
-config_dir="${CLAUDE_CONFIG_DIR:-$HOME/.claude}"
-root=$(node -e '
-  const m = require(process.argv[1]);
-  process.stdout.write(m.slimcandy.installLocation);
-' "$config_dir/plugins/known_marketplaces.json")
-
-node "$root/plugins/kit/scripts/apply-settings.js"
+# Deep-merge the repo's settings.json into ~/.claude/settings.json (repo values win, a backup is kept).
+node -e '
+const fs = require("fs"), dir = process.env.CLAUDE_CONFIG_DIR || process.env.HOME + "/.claude";
+const repo = require(dir + "/plugins/known_marketplaces.json").slimcandy.installLocation;
+const file = dir + "/settings.json";
+const isObj = (v) => v && typeof v === "object" && !Array.isArray(v);
+const merge = (a, b) => Object.fromEntries([...Object.entries(a), ...Object.entries(b).map(
+  ([k, v]) => [k, isObj(v) && isObj(a[k]) ? merge(a[k], v) : v])]);
+const current = fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, "utf8")) : {};
+if (fs.existsSync(file)) fs.copyFileSync(file, file + ".bak");
+const next = merge(current, JSON.parse(fs.readFileSync(repo + "/settings.json", "utf8")));
+fs.writeFileSync(file, JSON.stringify(next, null, 2) + "\n", { mode: 0o600 });
+console.log("Settings applied, backup: " + file + ".bak");
+'
 echo "Done. Restart Claude Code."
