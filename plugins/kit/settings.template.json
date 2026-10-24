@@ -1,0 +1,44 @@
+{
+  "env": {
+    "CLAUDE_CODE_IDE_SKIP_AUTO_INSTALL": "1",
+    "DISABLE_AUTOUPDATER": "1",
+    "FORCE_AUTOUPDATE_PLUGINS": "1"
+  },
+  "attribution": {
+    "commit": "",
+    "pr": ""
+  },
+  "permissions": {
+    "defaultMode": "auto"
+  },
+  "disableClaudeAiConnectors": true,
+  "statusLine": {
+    "type": "command",
+    "command": "node \"$HOME/.claude/plugins/marketplaces/slimcandy/plugins/kit/statusline.js\""
+  },
+  "extraKnownMarketplaces": {
+    "slimcandy": {
+      "source": {
+        "source": "github",
+        "repo": "slimcandy/claude-settings"
+      },
+      "autoUpdate": true
+    }
+  },
+  "enabledPlugins": {
+    "kit@slimcandy": true
+  },
+  "effortLevel": "high",
+  "modelSettings": {
+    "claude-sonnet-5": { "effortLevel": "high" },
+    "claude-opus-5": { "effortLevel": "xhigh" },
+    "claude-opus-5-5": { "effortLevel": "medium" },
+    "claude-sonnet-5-5": { "effortLevel": "high" },
+    "claude-fable-5-1": { "effortLevel": "xhigh" }
+  },
+  "timeFormat": "24-hour",
+  "autoMemoryEnabled": false,
+  "skipDangerousModePermissionPrompt": true,
+  "theme": "auto",
+  "disableDeepLinkRegistration": "disable"
+}

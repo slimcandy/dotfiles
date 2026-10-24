@@ -1,0 +1,10 @@
+{
+  "name": "kit",
+  "description": "My Claude Code settings, statusline and hooks",
+  "author": {
+    "name": "slimcandy",
+    "url": "https://github.com/slimcandy"
+  },
+  "repository": "https://github.com/slimcandy/claude-settings",
+  "license": "MIT"
+}

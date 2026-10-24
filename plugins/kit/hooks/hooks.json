@@ -1,0 +1,25 @@
+{
+  "description": "Play a sound when Claude finishes or needs attention (macOS only)",
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"${CLAUDE_PLUGIN_ROOT}\"/scripts/sound.sh Hero"
+          }
+        ]
+      }
+    ],
+    "Notification": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"${CLAUDE_PLUGIN_ROOT}\"/scripts/sound.sh Blow"
+          }
+        ]
+      }
+    ]
+  }
+}

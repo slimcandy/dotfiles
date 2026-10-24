@@ -1,0 +1,16 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "slimcandy",
+  "description": "Personal Claude Code setup: settings, statusline, hooks, skills",
+  "owner": {
+    "name": "slimcandy",
+    "url": "https://github.com/slimcandy"
+  },
+  "plugins": [
+    {
+      "name": "kit",
+      "source": "./plugins/kit",
+      "description": "My Claude Code settings, statusline and hooks"
+    }
+  ]
+}
