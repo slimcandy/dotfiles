@@ -5,6 +5,7 @@ set -eu
 
 claude plugin marketplace add slimcandy/claude-settings || claude plugin marketplace update slimcandy
 claude plugin install kit@slimcandy --scope user
+claude plugin update kit@slimcandy --scope user
 
 # Deep-merge the repo's settings.json into ~/.claude/settings.json (repo values win, a backup is kept).
 node -e '
