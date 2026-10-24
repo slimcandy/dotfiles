@@ -35,7 +35,7 @@ My dev setup: Homebrew apps, Claude Code (plugin marketplace + config) and VSCod
 
 ```
 .claude-plugin/marketplace.json   marketplace "slimcandy" (must stay at the repo root)
-claude/plugins/kit/               plugin "kit": hooks
+claude/plugins/kit/               plugin "kit": sound hooks, skill repo-style
 claude/plugins/quiet-tools/       mod: each tool call drawn as "<icon> <description>", output under ctrl+o
 claude/settings.json              -> ~/.claude/settings.json
 claude/statusline.js              -> ~/.claude/statusline.js (needs a Nerd Font)
