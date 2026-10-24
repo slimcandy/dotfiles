@@ -26,10 +26,6 @@ cask "claude-code@latest"
 cask "gog-galaxy"
 # Speech recognition tool
 cask "macwhisper"
-# Deep clean, analyze, and optimize app
-cask "mole-app"
-# Network monitor
-cask "netiquette"
 # Playstation 2 Emulator
 cask "pcsx2"
 # Screen recorder and editor
@@ -50,4 +46,3 @@ vscode "naumovs.color-highlight"
 vscode "streetsidesoftware.code-spell-checker"
 npm "@microsoft/learn-cli"
 npm "@playwright/cli"
-npm "playwright"

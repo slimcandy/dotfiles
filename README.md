@@ -16,6 +16,8 @@ My dev setup: Homebrew apps, Claude Code (plugin marketplace + config) and VSCod
    ```sh
    cp dotfiles/claude/settings.json dotfiles/claude/statusline.js ~/.claude/
    cp dotfiles/vscodium/settings.json ~/Library/Application\ Support/VSCodium/User/
+   cp -R dotfiles/fish/ ~/.config/fish/
+   netlify --telemetry-disable   # netlify keeps this in its own config, not in env
    ```
 
 3. Install the Claude Code plugins:
@@ -35,8 +37,14 @@ claude/plugins/quiet-tools/       mod: each tool call drawn as "<icon> <descript
 claude/settings.json              -> ~/.claude/settings.json
 claude/statusline.js              -> ~/.claude/statusline.js (needs a Nerd Font)
 vscodium/settings.json            -> ~/Library/Application Support/VSCodium/User/settings.json
+fish/config.fish                  -> ~/.config/fish/config.fish
+fish/conf.d/no-telemetry.fish     -> ~/.config/fish/conf.d/: telemetry opt-outs (brew, gh, Next.js, ...)
 Brewfile                          brew formulae, casks, VSCodium extensions, global npm packages
 ```
+
+Telemetry is off everywhere it can be set from config: the fish env file above,
+`DISABLE_TELEMETRY` / `DISABLE_ERROR_REPORTING` in Claude Code, `telemetry.telemetryLevel` in VSCodium.
+GUI apps (Steam, Screen Studio, ...) are set in their own preferences.
 
 ## Updates
 
