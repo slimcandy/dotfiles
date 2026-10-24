@@ -11,12 +11,15 @@ My dev setup: Homebrew apps, Claude Code (plugin marketplace + config) and VSCod
    brew bundle --file dotfiles/Brewfile
    ```
 
+   Not in brew: the MonoLisa Nerd Font (paid), install it by hand.
+
 2. Copy config files:
 
    ```sh
    cp dotfiles/claude/settings.json dotfiles/claude/statusline.js ~/.claude/
    cp dotfiles/vscodium/settings.json ~/Library/Application\ Support/VSCodium/User/
    cp -R dotfiles/fish/ ~/.config/fish/
+   cp dotfiles/starship/starship.toml ~/.config/
    netlify --telemetry-disable   # netlify keeps this in its own config, not in env
    ```
 
@@ -39,6 +42,7 @@ claude/statusline.js              -> ~/.claude/statusline.js (needs a Nerd Font)
 vscodium/settings.json            -> ~/Library/Application Support/VSCodium/User/settings.json
 fish/config.fish                  -> ~/.config/fish/config.fish
 fish/conf.d/no-telemetry.fish     -> ~/.config/fish/conf.d/: telemetry opt-outs (brew, gh, Next.js, ...)
+starship/starship.toml            -> ~/.config/starship.toml (needs a Nerd Font)
 Brewfile                          brew formulae, casks, VSCodium extensions, global npm packages
 ```
 
