@@ -26,7 +26,8 @@
     }
   },
   "enabledPlugins": {
-    "kit@slimcandy": true
+    "kit@slimcandy": true,
+    "quiet-tools@slimcandy": true
   },
   "timeFormat": "24-hour",
   "autoMemoryEnabled": false,

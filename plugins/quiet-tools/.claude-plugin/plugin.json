@@ -1,0 +1,4 @@
+{
+  "name": "quiet-tools",
+  "description": "Draws each tool call as one line: a Nerd Font icon and what it did. ctrl+o shows everything."
+}

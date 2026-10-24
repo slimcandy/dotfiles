@@ -16,6 +16,7 @@ My Claude Code setup: a plugin marketplace plus config files a plugin can't ship
    ```sh
    claude plugin marketplace add slimcandy/claude-settings
    claude plugin install kit@slimcandy
+   claude plugin install quiet-tools@slimcandy
    ```
 
    Since `config/settings.json` declares the marketplace and enables `kit@slimcandy`,
@@ -26,6 +27,7 @@ My Claude Code setup: a plugin marketplace plus config files a plugin can't ship
 ```
 .claude-plugin/marketplace.json   marketplace "slimcandy"
 plugins/kit/                      plugin "kit": hooks (later: skills, agents, .mcp.json)
+plugins/quiet-tools/              mod: each tool call drawn as "<icon> <description>", output under ctrl+o
 config/settings.json              -> ~/.claude/settings.json
 config/statusline.js              -> ~/.claude/statusline.js (needs a Nerd Font)
 ```

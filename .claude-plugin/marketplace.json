@@ -1,8 +1,19 @@
 {
   "name": "slimcandy",
   "description": "Personal Claude Code setup",
-  "owner": { "name": "slimcandy" },
+  "owner": {
+    "name": "slimcandy"
+  },
   "plugins": [
-    { "name": "kit", "source": "./plugins/kit", "description": "My hooks and skills" }
+    {
+      "name": "kit",
+      "source": "./plugins/kit",
+      "description": "My hooks and skills"
+    },
+    {
+      "name": "quiet-tools",
+      "source": "./plugins/quiet-tools",
+      "description": "Compact tool rows: icon + description, output under ctrl+o"
+    }
   ]
 }
