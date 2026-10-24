@@ -14,7 +14,7 @@
   "disableClaudeAiConnectors": true,
   "statusLine": {
     "type": "command",
-    "command": "node \"$HOME/.claude/plugins/marketplaces/slimcandy/statusline.js\""
+    "command": "node \"$HOME/.claude/statusline.js\""
   },
   "extraKnownMarketplaces": {
     "slimcandy": {

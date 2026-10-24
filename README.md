@@ -1,26 +1,37 @@
 # claude-settings
 
-My Claude Code setup as a plugin marketplace.
+My Claude Code setup: a plugin marketplace plus config files a plugin can't ship.
 
-## Install / re-apply settings
+## New machine
 
-```sh
-curl -fsSL https://raw.githubusercontent.com/slimcandy/claude-settings/main/install.sh | sh
-```
+1. Copy the config files:
 
-Adds this repo as the `slimcandy` marketplace, installs `kit@slimcandy`, and deep-merges
-`settings.json` into `~/.claude/settings.json` (backup: `settings.json.bak`). Run it again after
-changing `settings.json`.
+   ```sh
+   git clone https://github.com/slimcandy/claude-settings.git
+   cp claude-settings/config/* ~/.claude/
+   ```
+
+2. Install the plugins:
+
+   ```sh
+   claude plugin marketplace add slimcandy/claude-settings
+   claude plugin install kit@slimcandy
+   ```
+
+   Since `config/settings.json` declares the marketplace and enables `kit@slimcandy`,
+   Claude Code may also offer to install it on first start.
 
 ## Layout
 
 ```
 .claude-plugin/marketplace.json   marketplace "slimcandy"
-plugins/kit/                      plugin "kit": hooks, skills, agents, .mcp.json
-settings.json                     user settings a plugin can't set (statusLine, env, permissions…)
-statusline.js                     status line, run from the marketplace clone (needs a Nerd Font)
-install.sh
+plugins/kit/                      plugin "kit": hooks (later: skills, agents, .mcp.json)
+config/settings.json              -> ~/.claude/settings.json
+config/statusline.js              -> ~/.claude/statusline.js (needs a Nerd Font)
 ```
 
-Plugin changes reach other machines automatically (`autoUpdate` + `FORCE_AUTOUPDATE_PLUGINS`).
-`settings.json` changes need `install.sh` to be re-run.
+## Updates
+
+- Plugins update on their own: the marketplace has `autoUpdate`, and `FORCE_AUTOUPDATE_PLUGINS=1`
+  overrides `DISABLE_AUTOUPDATER=1`, which would otherwise block plugin updates too.
+- Files in `config/` are copied by hand.
