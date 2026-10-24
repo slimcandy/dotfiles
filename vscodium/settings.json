@@ -1,0 +1,103 @@
+{
+  /**
+   * VS Code Settings
+   *
+   * @link https://frontendmasters.com/courses/vs-code-v2/navigating-the-interface/
+   * @link https://www.youtube.com/watch?v=QeUp3CahkQw
+   */
+
+  // 🎨 ─── Theme & UI ────────────────────────────────────────────────────────────
+  "window.autoDetectColorScheme": true,
+  "workbench.preferredDarkColorTheme": "Monokai Pro (Filter Octagon)",
+  "workbench.preferredLightColorTheme": "Monokai Pro Light (Filter Sun)",
+  "workbench.iconTheme": "Monokai Pro (Filter Octagon) Icons",
+  "workbench.colorTheme": "Monokai Pro (Filter Octagon)",
+  "editor.fontFamily": "'MonoLisa Nerd Font', monospace",
+  "editor.fontLigatures": true,
+  "editor.fontSize": 14,
+  "window.zoomLevel": 1,
+  "editor.minimap.enabled": false,
+  "editor.smoothScrolling": true,
+  "editor.cursorBlinking": "smooth",
+  "editor.cursorSmoothCaretAnimation": "on",
+  "workbench.sideBar.location": "right",
+  "workbench.secondarySideBar.defaultVisibility": "hidden",
+  "workbench.statusBar.visible": false,
+  "workbench.layoutControl.enabled": false,
+  "workbench.browser.showInTitleBar": false,
+  "workbench.editor.useModal": "off",
+  "workbench.editor.tabSizing": "shrink",
+  "window.commandCenter": false,
+
+  // ⚙️ ─── Editor Behaviour ──────────────────────────────────────────────────────
+  "editor.hover.delay": 1000,
+  "editor.quickSuggestionsDelay": 1000,
+  "editor.snippetSuggestions": "bottom",
+  "editor.gotoLocation.multipleDefinitions": "goto",
+  "editor.gotoLocation.multipleReferences": "goto",
+  "editor.guides.bracketPairs": true,
+  "editor.bracketPairColorization.enabled": true,
+  "editor.stickyScroll.enabled": true,
+  "editor.semanticHighlighting.enabled": true,
+  "editor.pasteAs.preferences": ["text.plain"],
+  "editor.wordWrap": "on",
+  "editor.renderWhitespace": "boundary",
+  "editor.linkedEditing": true,
+  "editor.tabSize": 2,
+
+  // 📁 ─── Files & Workbench ─────────────────────────────────────────────────────
+  "files.autoSave": "afterDelay",
+  "files.autoSaveDelay": 1000,
+  "files.trimTrailingWhitespace": true,
+  "files.insertFinalNewline": true,
+  "workbench.editor.revealIfOpen": true,
+  "explorer.confirmDragAndDrop": false,
+  "debug.internalConsoleOptions": "neverOpen",
+
+  // 🧹 ─── Formatting & Lint ─────────────────────────────────────────────────────
+  "editor.formatOnSave": true,
+  "editor.formatOnSaveMode": "modifications",
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit",
+  },
+
+  // 🟦 ─── TypeScript ────────────────────────────────────────────────────────────
+  "js/ts.inlayHints.parameterNames.enabled": "literals",
+
+  // 💻 ─── Terminal ──────────────────────────────────────────────────────────────
+  "terminal.integrated.defaultProfile.osx": "fish",
+  "terminal.integrated.fontWeight": "100",
+  "terminal.integrated.fontSize": 14,
+  "terminal.integrated.cursorBlinking": true,
+  "terminal.integrated.smoothScrolling": true,
+  "terminal.integrated.initialHint": false,
+
+  // 🌱 ─── Git & Diff ────────────────────────────────────────────────────────────
+  "git.autofetch": false,
+  "git.confirmSync": false,
+  "git.ignoreRebaseWarning": true,
+  "git.openRepositoryInParentFolders": "never",
+  "diffEditor.ignoreTrimWhitespace": false,
+  "diffEditor.renderSideBySide": false,
+
+  // 🔒 ─── Privacy & Updates ─────────────────────────────────────────────────────
+  "telemetry.telemetryLevel": "off",
+  "workbench.enableExperiments": false,
+  "workbench.settings.enableNaturalLanguageSearch": false,
+  "npm.fetchOnlinePackageInfo": false,
+
+  "update.mode": "manual",
+  "update.showReleaseNotes": false,
+  "extensions.autoUpdate": "off",
+  "extensions.autoCheckUpdates": false,
+  "extensions.ignoreRecommendations": true,
+
+  // 🧩 ─── Extensions ────────────────────────────────────────────────────────────
+  "emmet.triggerExpansionOnTab": true,
+  "cSpell.language": "en,ru",
+  "cSpell.userWords": ["VDOM"],
+  "extensions.supportAgentsWindow": {
+    "monokai.theme-monokai-pro-vscode": true,
+  },
+}

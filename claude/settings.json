@@ -20,7 +20,7 @@
     "slimcandy": {
       "source": {
         "source": "github",
-        "repo": "slimcandy/claude-settings"
+        "repo": "slimcandy/dotfiles"
       },
       "autoUpdate": true
     }

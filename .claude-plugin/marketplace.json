@@ -7,12 +7,12 @@
   "plugins": [
     {
       "name": "kit",
-      "source": "./plugins/kit",
+      "source": "./claude/plugins/kit",
       "description": "My hooks and skills"
     },
     {
       "name": "quiet-tools",
-      "source": "./plugins/quiet-tools",
+      "source": "./claude/plugins/quiet-tools",
       "description": "Compact tool rows: icon + description, output under ctrl+o"
     }
   ]
