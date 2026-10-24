@@ -12,8 +12,6 @@ brew "gh"
 brew "node"
 # Netlify command-line tool
 brew "netlify-cli"
-# Development kit for the Java programming language
-brew "openjdk"
 # Cross-shell prompt for astronauts
 brew "starship"
 # Feature-rich command-line audio/video downloader
