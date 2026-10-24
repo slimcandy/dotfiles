@@ -102,14 +102,10 @@ export const register: Register = on => {
 
     return (
       <Box flexDirection="column">
-        <Text>
-          <Text color={isErrored && !isInterrupted ? 'red' : undefined} dimColor={isRunning}>
-            {isErrored && !isInterrupted ? ICON.error : iconFor(tool)}
-          </Text>{' '}
-          <Text dimColor={isRunning} strikethrough={isInterrupted}>
-            {clip(label, width - detail.length - 2)}
-          </Text>
-          {detail ? <Text dimColor>{'  ' + detail}</Text> : null}
+        <Text dimColor>
+          {isErrored && !isInterrupted ? <Text color="red">{ICON.error}</Text> : iconFor(tool)}{' '}
+          <Text strikethrough={isInterrupted}>{clip(label, width - detail.length - 2)}</Text>
+          {detail ? '  ' + detail : null}
         </Text>
         {error ? <Text color="red">{'  ' + clip(error, width - 2)}</Text> : null}
       </Box>
