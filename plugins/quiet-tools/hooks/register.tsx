@@ -103,7 +103,7 @@ export const register: Register = on => {
     return (
       <Box flexDirection="column">
         <Text dimColor>
-          {isErrored && !isInterrupted ? <Text color="red">{ICON.error}</Text> : iconFor(tool)}{' '}
+          {isErrored && !isInterrupted ? <Text color="red">{ICON.error}</Text> : iconFor(tool)}{'  '}
           <Text strikethrough={isInterrupted}>{clip(label, width - detail.length - 2)}</Text>
           {detail ? '  ' + detail : null}
         </Text>
