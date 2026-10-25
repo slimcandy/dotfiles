@@ -14,9 +14,17 @@
     "defaultMode": "auto"
   },
   "disableClaudeAiConnectors": true,
+  "skillOverrides": {
+    "microsoft-learn-cli": "off"
+  },
   "statusLine": {
     "type": "command",
     "command": "node \"$HOME/.claude/statusline.js\""
+  },
+  "enabledPlugins": {
+    "chrome-devtools-mcp@claude-plugins-official": false,
+    "kit@slimcandy": true,
+    "quiet-tools@slimcandy": true
   },
   "extraKnownMarketplaces": {
     "slimcandy": {
@@ -26,10 +34,6 @@
       },
       "autoUpdate": true
     }
-  },
-  "enabledPlugins": {
-    "kit@slimcandy": true,
-    "quiet-tools@slimcandy": true
   },
   "timeFormat": "24-hour",
   "autoMemoryEnabled": false,
