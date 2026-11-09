@@ -12,6 +12,8 @@ brew "gh"
 brew "node"
 # Netlify command-line tool
 brew "netlify-cli"
+# AI agent toolkit
+brew "pi-coding-agent"
 # Cross-shell prompt for astronauts
 brew "starship"
 # Feature-rich command-line audio/video downloader
@@ -22,6 +24,8 @@ cask "claude"
 cask "claude-code@latest"
 # Game client
 cask "gog-galaxy"
+# Discover, download, and run local LLMs
+cask "lm-studio"
 # Speech recognition tool
 cask "macwhisper"
 # Playstation 2 Emulator

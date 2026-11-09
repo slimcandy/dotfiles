@@ -1,6 +1,6 @@
 # dotfiles
 
-My dev setup: Homebrew apps, Claude Code (plugin marketplace + config) and VSCodium.
+My dev setup: Homebrew apps, Claude Code (plugin marketplace + config), VSCodium and a local coding agent (pi + LM Studio).
 
 ## New machine
 
@@ -31,6 +31,18 @@ My dev setup: Homebrew apps, Claude Code (plugin marketplace + config) and VSCod
    claude plugin install quiet-tools@slimcandy
    ```
 
+4. Local coding agent. Open LM Studio once so it creates `~/.lmstudio`, then:
+
+   ```sh
+   ~/.lmstudio/bin/lms bootstrap   # adds the lms command
+   lms get https://huggingface.co/lmstudio-community/Qwen3.6-35B-A3B-MLX-6bit -y
+   mkdir -p ~/.pi/agent && cp -R dotfiles/pi/ ~/.pi/agent/
+   mkdir -p ~/.lmstudio/.internal/user-concrete-model-default-config/lmstudio-community
+   cp dotfiles/lmstudio/Qwen3.6-35B-A3B-MLX-6bit.json ~/.lmstudio/.internal/user-concrete-model-default-config/lmstudio-community/
+   ```
+
+   Then run `pi` in a project folder. LM Studio loads the model on the first request.
+
 ## Layout
 
 ```
@@ -43,8 +55,41 @@ vscodium/settings.json            -> ~/Library/Application Support/VSCodium/User
 fish/config.fish                  -> ~/.config/fish/config.fish
 fish/conf.d/no-telemetry.fish     -> ~/.config/fish/conf.d/: telemetry opt-outs (brew, gh, Next.js, ...)
 starship/starship.toml            -> ~/.config/starship.toml (needs a Nerd Font)
+pi/                               -> ~/.pi/agent/: pi with the local Qwen3.6-35B-A3B model
+lmstudio/*.json                   -> ~/.lmstudio/.internal/user-concrete-model-default-config/lmstudio-community/
 Brewfile                          brew formulae, casks, VSCodium extensions, global npm packages
 ```
+
+## Local coding agent
+
+[pi](https://github.com/earendil-works/pi) runs on **Qwen3.6-35B-A3B** (MLX, 6-bit, 29 GB) served by LM Studio
+on `127.0.0.1:1234`. In a 30-minute benchmark on a Mac mini M4 Pro with 64 GB it was the only local setup that
+built a whole Next.js site from one prompt (12 minutes). Qwen3.8-27B was 4× slower, and gpt-oss-20b broke its tool calls.
+
+- `pi/models.json`: the LM Studio connection and the model. Context window 98,304 tokens, 32,768 output tokens,
+  and Qwen's recommended sampling (temperature 0.6, top_p 0.95, top_k 20). `supportsDeveloperRole: false`,
+  because Qwen's chat template has no developer role.
+- `pi/settings.json`: this model is the default, with thinking level medium.
+- `pi/mcp.json`: the Safari MCP. Enable it once: Safari → Settings → Advanced → Show features for web developers,
+  then Develop → Allow Remote Automation, then `safaridriver --enable`.
+- `pi/extensions/`: `todo`, `plan-mode` and `subagent`, copied from pi's examples (MIT).
+- `pi/agents/`: subagents `scout` (read-only recon), `reviewer` (read-only review) and `worker`.
+  None of them sets a model, so they all use the main one. Use `scout` and `reviewer`.
+  In the benchmark, splitting a build across workers broke the page.
+- `pi/prompts/`, `pi/orchestrator.md`: prompt templates and an optional lead-engineer prompt,
+  used as `pi --append-system-prompt ~/.pi/agent/orchestrator.md`.
+- `lmstudio/Qwen3.6-35B-A3B-MLX-6bit.json`: LM Studio's per-model load settings, the same as the gear icon
+  in My Models. It sets a 98,304-token context, so a model that LM Studio loads on demand matches pi.
+  Without it, LM Studio's global default of 8,192 tokens applies and long sessions break.
+  `.internal` is LM Studio's own folder, so the path may change in a later version.
+
+Rules:
+
+- Load one model at a time. macOS gives the GPU about 75% of RAM, and a second model next to this one
+  crashes with "Insufficient Memory".
+- Thinking is always on. LM Studio ignores the off switch for this model, and Qwen3.6 has no effort levels.
+- On a 36–48 GB Mac, use the 4-bit build (20.4 GB) instead of the 6-bit one. Then rename the file in `lmstudio/` to match.
+
 
 Telemetry is off everywhere it can be set from config: the fish env file above,
 `DISABLE_TELEMETRY` / `DISABLE_ERROR_REPORTING` in Claude Code, `telemetry.telemetryLevel` in VSCodium.
