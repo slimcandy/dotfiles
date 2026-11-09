@@ -82,13 +82,28 @@ built a whole Next.js site from one prompt (12 minutes). Qwen3.8-27B was 4× slo
 - `pi/mcp.json`: the Safari MCP. Enable it once: Safari → Settings → Advanced → Show features for web developers,
   then Develop → Allow Remote Automation, then `safaridriver --enable`.
 - `pi/extensions/`:
-  - `todo`, `plan-mode`, `questionnaire` (multiple-choice questions to you) and `subagent`,
-    copied from pi's examples (MIT).
+  - `todo`, `plan-mode` (`/plan` or Ctrl+Alt+P: read-only exploration, then a plan to approve) and
+    `questionnaire` (multiple-choice questions to you), copied from pi's examples (MIT).
   - `sound.ts`: the same sounds as the Claude Code `kit` plugin. Hero plays when pi finishes,
     Blow when it asks a question.
-- `pi/agents/`: subagents `scout` (read-only recon) and `reviewer` (read-only review). They come from pi's
-  subagent example, rewritten to be shorter. Neither sets a model, so both use the main one.
-  There's no `worker`: in the benchmark, splitting a build across workers broke the page.
+- No subagents. On one GPU with one model they take turns instead of working in parallel, and there's no
+  cheaper model to hand work to. In the benchmark, the run with subagents broke the page and took
+  29 minutes; the winning run (12 minutes) used none.
+- Claude Code agents become pi skills that point at the agent file, so the instructions live in one place.
+  Put `.pi/skills/<name>/SKILL.md` in the project:
+
+  ```markdown
+  ---
+  name: linkedin-post-writer
+  description: "Writes LinkedIn posts … Use when asked for a LinkedIn post."
+  ---
+
+  Read `../../../.claude/agents/linkedin-post-writer.md` (relative to this skill's folder) and follow it,
+  ignoring its frontmatter. It was written as a Claude Code subagent; here you do the work yourself.
+  ```
+
+  Quote the description: a `: ` inside it breaks the frontmatter and pi skips the skill silently.
+  Claude Code commands become `.pi/prompts/<name>.md` the same way. pi asks once to trust a project's `.pi/` folder.
 - `lmstudio/Qwen3.6-35B-A3B-MLX-6bit.json`: LM Studio's per-model load settings, the same as the gear icon
   in My Models. It sets a 98,304-token context, so a model that LM Studio loads on demand matches pi.
   Without it, LM Studio's global default of 8,192 tokens applies and long sessions break.
