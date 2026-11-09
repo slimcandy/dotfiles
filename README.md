@@ -60,6 +60,10 @@ lmstudio/*.json                   -> ~/.lmstudio/.internal/user-concrete-model-d
 Brewfile                          brew formulae, casks, VSCodium extensions, global npm packages
 ```
 
+Telemetry is off everywhere it can be set from config: the fish env file above,
+`DISABLE_TELEMETRY` / `DISABLE_ERROR_REPORTING` in Claude Code, `telemetry.telemetryLevel` in VSCodium.
+GUI apps (Steam, Screen Studio, ...) are set in their own preferences.
+
 ## Local coding agent
 
 [pi](https://github.com/earendil-works/pi) runs on **Qwen3.6-35B-A3B** (MLX, 6-bit, 29 GB) served by LM Studio
@@ -67,20 +71,28 @@ on `127.0.0.1:1234`. In a 30-minute benchmark on a Mac mini M4 Pro with 64 GB it
 built a whole Next.js site from one prompt (12 minutes). Qwen3.8-27B was 4× slower, and gpt-oss-20b broke its tool calls.
 
 - `pi/models.json`: the LM Studio connection and the model. Context window 98,304 tokens, 32,768 output tokens,
-  and Qwen's recommended sampling (temperature 0.6, top_p 0.95, top_k 20). `supportsDeveloperRole: false`,
-  because Qwen's chat template has no developer role.
-- `pi/settings.json`: this model is the default, with thinking level medium.
+  and Qwen's recommended sampling (temperature 0.6, top_p 0.95, top_k 20), which pi sends with every request.
+  `supportsDeveloperRole: false`, because Qwen's chat template has no developer role.
+- `pi/settings.json`: this model is the default, with thinking level medium. `packages` lists npm packages,
+  which pi installs on its first start:
+  - [`pi-web-access`](https://www.npmjs.com/package/pi-web-access): web search, page fetch and PDF text,
+    no API key needed. Searches go to Exa's hosted service by default.
+  - [`cc-safety-net`](https://www.npmjs.com/package/cc-safety-net): blocks `rm -rf`, `git reset --hard`,
+    `git push --force`, `curl … | bash`, and reading `.env` files or SSH keys.
 - `pi/mcp.json`: the Safari MCP. Enable it once: Safari → Settings → Advanced → Show features for web developers,
   then Develop → Allow Remote Automation, then `safaridriver --enable`.
-- `pi/extensions/`: `todo`, `plan-mode` and `subagent`, copied from pi's examples (MIT).
-- `pi/agents/`: subagents `scout` (read-only recon), `reviewer` (read-only review) and `worker`.
-  None of them sets a model, so they all use the main one. Use `scout` and `reviewer`.
-  In the benchmark, splitting a build across workers broke the page.
-- `pi/prompts/`, `pi/orchestrator.md`: prompt templates and an optional lead-engineer prompt,
-  used as `pi --append-system-prompt ~/.pi/agent/orchestrator.md`.
+- `pi/extensions/`:
+  - `todo`, `plan-mode`, `questionnaire` (multiple-choice questions to you) and `subagent`,
+    copied from pi's examples (MIT).
+  - `sound.ts`: the same sounds as the Claude Code `kit` plugin. Hero plays when pi finishes,
+    Blow when it asks a question.
+- `pi/agents/`: subagents `scout` (read-only recon) and `reviewer` (read-only review). They come from pi's
+  subagent example, rewritten to be shorter. Neither sets a model, so both use the main one.
+  There's no `worker`: in the benchmark, splitting a build across workers broke the page.
 - `lmstudio/Qwen3.6-35B-A3B-MLX-6bit.json`: LM Studio's per-model load settings, the same as the gear icon
   in My Models. It sets a 98,304-token context, so a model that LM Studio loads on demand matches pi.
   Without it, LM Studio's global default of 8,192 tokens applies and long sessions break.
+  Sampling isn't set here: it only affects LM Studio's own chat window, because pi sends its own with every request.
   `.internal` is LM Studio's own folder, so the path may change in a later version.
 
 Rules:
@@ -90,15 +102,10 @@ Rules:
 - Thinking is always on. LM Studio ignores the off switch for this model, and Qwen3.6 has no effort levels.
 - On a 36–48 GB Mac, use the 4-bit build (20.4 GB) instead of the 6-bit one. Then rename the file in `lmstudio/` to match.
 
-
-Telemetry is off everywhere it can be set from config: the fish env file above,
-`DISABLE_TELEMETRY` / `DISABLE_ERROR_REPORTING` in Claude Code, `telemetry.telemetryLevel` in VSCodium.
-GUI apps (Steam, Screen Studio, ...) are set in their own preferences.
-
 ## Updates
 
 - Apps: `brew upgrade`. Refresh the list with `brew bundle dump --file Brewfile --force`;
   `brew bundle cleanup --file Brewfile` shows what's installed but not listed.
 - Claude Code plugins update on their own: the marketplace has `autoUpdate`, and
   `FORCE_AUTOUPDATE_PLUGINS=1` overrides `DISABLE_AUTOUPDATER=1`.
-- Config files are copied by hand.
+- Config files are copied by hand. pi packages: `pi update --extensions`.

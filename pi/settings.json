@@ -2,5 +2,9 @@
   "defaultProvider": "lmstudio",
   "defaultModel": "qwen3.6-35b-a3b-mlx",
   "defaultThinkingLevel": "medium",
-  "enableInstallTelemetry": false
+  "enableInstallTelemetry": false,
+  "packages": [
+    "npm:pi-web-access",
+    "npm:cc-safety-net"
+  ]
 }
