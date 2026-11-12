@@ -153,8 +153,13 @@ Settings (`mbp-m2-16gb/`):
   1,024-token window in 21 of 28 layers, so its context costs about 14 KB per token: peak memory is about 8 GB.
   A 32k window would leave only 16k for the conversation after the output reserve.
 - **Parallel sessions 1.** LM Studio's default reserves memory for 4 conversations; pi only runs one.
-- Sampling: temperature 1.0 (JetBrains' default for agents; 0.6 is for chat), top_p 0.95, top_k 20.
-- `supportsReasoningEffort: false`: the template only switches thinking on or off, with no effort levels.
+- Sampling as in JetBrains' pi benchmark ("each model's default sampling, temperature 1.0"): temperature 1.0 and
+  everything else neutral (top_p 1.0, top_k 0 = off, min_p 0, repeat_penalty 1.0). They're set explicitly
+  because LM Studio fills any missing field from its own chat presets. JetBrains' 0.6 / 0.95 / 20 is for chat only.
+- Thinking is always on. The template has an `enable_thinking` switch but no effort levels, and LM Studio ignores
+  every way of turning it off (`reasoning_effort: "none"`, `enable_thinking`, `chat_template_kwargs`; tested with
+  Qwen3.6, which has the same switch). So `supportsReasoningEffort: false`. Earlier thinking stays in the history:
+  LM Studio returns it as `reasoning_content`, pi sends it back the same way, and the template reads that field.
 - KV cache quantization stays off: it's experimental in LM Studio and would save only about 0.3 GB here.
 - Close Docker and spare browsers during long sessions: the model needs about 8 GB of the 16.
 
