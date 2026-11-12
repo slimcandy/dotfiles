@@ -31,7 +31,8 @@ My dev setup: Homebrew apps, Claude Code (plugin marketplace + config), VSCodium
    claude plugin install quiet-tools@slimcandy
    ```
 
-4. Local coding agent. Open LM Studio once so it creates `~/.lmstudio`, then:
+4. Local coding agent, **Mac mini M4 Pro, 64 GB only**. On the MacBook Pro M2 with 16 GB, follow
+   [MacBook Pro M2, 16 GB](#macbook-pro-m2-16-gb) instead. Open LM Studio once so it creates `~/.lmstudio`, then:
 
    ```sh
    ~/.lmstudio/bin/lms bootstrap   # adds the lms command
@@ -55,8 +56,9 @@ vscodium/settings.json            -> ~/Library/Application Support/VSCodium/User
 fish/config.fish                  -> ~/.config/fish/config.fish
 fish/conf.d/no-telemetry.fish     -> ~/.config/fish/conf.d/: telemetry opt-outs (brew, gh, Next.js, ...)
 starship/starship.toml            -> ~/.config/starship.toml (needs a Nerd Font)
-pi/                               -> ~/.pi/agent/: pi with the local Qwen3.6-35B-A3B model
+pi/                               -> ~/.pi/agent/: pi with the local Qwen3.6-35B-A3B model (Mac mini, 64 GB)
 lmstudio/*.json                   -> ~/.lmstudio/.internal/user-concrete-model-default-config/lmstudio-community/
+mbp-m2-16gb/                      MacBook Pro M2, 16 GB only: Mellum2.1 configs for pi and LM Studio
 Brewfile                          brew formulae, casks, VSCodium extensions, global npm packages
 ```
 
@@ -65,6 +67,8 @@ Telemetry is off everywhere it can be set from config: the fish env file above,
 GUI apps (Steam, Screen Studio, ...) are set in their own preferences.
 
 ## Local coding agent
+
+This section is for the **Mac mini M4 Pro with 64 GB**. The 16 GB MacBook Pro has its own setup below.
 
 [pi](https://github.com/earendil-works/pi) runs on **Qwen3.6-35B-A3B** (MLX, 6-bit, 29 GB) served by LM Studio
 on `127.0.0.1:1234`. In a 30-minute benchmark on a Mac mini M4 Pro with 64 GB it was the only local setup that
@@ -116,6 +120,46 @@ Rules:
   crashes with "Insufficient Memory".
 - Thinking is always on. LM Studio ignores the off switch for this model, and Qwen3.6 has no effort levels.
 - On a 36–48 GB Mac, use the 4-bit build (20.4 GB) instead of the 6-bit one. Then rename the file in `lmstudio/` to match.
+
+### MacBook Pro M2, 16 GB
+
+**Not for the Mac mini.** The 13" MacBook Pro (2022, base M2, 100 GB/s memory bandwidth) can't hold Qwen3.6-35B-A3B,
+and a dense 9B model there is slow (about a minute before the first token on an 8k-token prompt) and pushes macOS
+into swap at long context. pi runs on
+[Mellum2.1-12B-A2.5B-Thinking](https://huggingface.co/JetBrains/Mellum2.1-12B-A2.5B-Thinking) (JetBrains,
+Apache 2.0) instead. It's a mixture-of-experts model with 2.5B active parameters, so it processes prompts about
+3× faster than a dense 9B, and JetBrains benchmarked it with pi (SWE-bench Verified 47.0).
+
+Build: [imaadd05/Mellum2.1-12B-A2.5B-Thinking-mlx-nvfp4](https://huggingface.co/imaadd05/Mellum2.1-12B-A2.5B-Thinking-mlx-nvfp4)
+(MLX NVFP4, 6.8 GB, chat template identical to JetBrains' original). NVFP4 rather than MXFP4: it stays closer to
+the original model (lower KL divergence on tool calls) and is only about 5% slower. The 6-bit build (9.9 GB) is too
+big for 16 GB.
+
+Do steps 1–3 of [New machine](#new-machine) as usual, then instead of step 4:
+
+```sh
+~/.lmstudio/bin/lms bootstrap
+lms get https://huggingface.co/imaadd05/Mellum2.1-12B-A2.5B-Thinking-mlx-nvfp4 -y
+lms ls   # the model id must match "id" in mbp-m2-16gb/pi/models.json; fix it there if not
+mkdir -p ~/.pi/agent && cp -R dotfiles/pi/ ~/.pi/agent/   # extensions
+cp dotfiles/mbp-m2-16gb/pi/*.json ~/.pi/agent/            # replaces the Mac mini models/settings
+mkdir -p ~/.lmstudio/.internal/user-concrete-model-default-config/imaadd05
+cp dotfiles/mbp-m2-16gb/lmstudio/*.json ~/.lmstudio/.internal/user-concrete-model-default-config/imaadd05/
+```
+
+Settings (`mbp-m2-16gb/`):
+
+- Context **49,152 tokens**, 16,384 output tokens per turn (as in JetBrains' pi benchmark). Mellum keeps only a
+  1,024-token window in 21 of 28 layers, so its context costs about 14 KB per token: peak memory is about 8 GB.
+  A 32k window would leave only 16k for the conversation after the output reserve.
+- **Parallel sessions 1.** LM Studio's default reserves memory for 4 conversations; pi only runs one.
+- Sampling: temperature 1.0 (JetBrains' default for agents; 0.6 is for chat), top_p 0.95, top_k 20.
+- `supportsReasoningEffort: false`: the template only switches thinking on or off, with no effort levels.
+- KV cache quantization stays off: it's experimental in LM Studio and would save only about 0.3 GB here.
+- Close Docker and spare browsers during long sessions: the model needs about 8 GB of the 16.
+
+If pi stops after a turn without running the tool it announced, the MLX engine dropped a tool call it couldn't
+parse. Switch to the GGUF Q4_K_M build of the same model.
 
 ## Updates
 

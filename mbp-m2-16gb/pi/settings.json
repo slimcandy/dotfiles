@@ -1,0 +1,10 @@
+{
+  "defaultProvider": "lmstudio",
+  "defaultModel": "mellum2.1-12b-a2.5b-thinking-mlx-nvfp4",
+  "defaultThinkingLevel": "medium",
+  "enableInstallTelemetry": false,
+  "packages": [
+    "npm:pi-web-access",
+    "npm:cc-safety-net"
+  ]
+}
