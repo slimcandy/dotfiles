@@ -1,0 +1,12 @@
+{
+  "autoEnableCodemode": false,
+  "mcpServers": {
+    "safari": {
+      "command": "/usr/bin/safaridriver",
+      "args": [
+        "--mcp"
+      ],
+      "exposure": "direct"
+    }
+  }
+}

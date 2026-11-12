@@ -58,7 +58,7 @@ fish/conf.d/no-telemetry.fish     -> ~/.config/fish/conf.d/: telemetry opt-outs 
 starship/starship.toml            -> ~/.config/starship.toml (needs a Nerd Font)
 pi/                               -> ~/.pi/agent/: pi with the local Qwen3.6-35B-A3B model (Mac mini, 64 GB)
 lmstudio/*.json                   -> ~/.lmstudio/.internal/user-concrete-model-default-config/lmstudio-community/
-mbp-m2-16gb/                      MacBook Pro M2, 16 GB only: Qwen3.5-4B configs for pi and LM Studio
+mbp-m2-16gb/                      MacBook Pro M2, 16 GB only: read-only pi with Qwen3.5-4B, LM Studio config
 Brewfile                          brew formulae, casks, VSCodium extensions, global npm packages
 ```
 
@@ -128,6 +128,10 @@ Dense 9B models (Ornith-1.0-9B) and Mellum2.1-12B-A2.5B with its always-on think
 [Qwen3.5-4B](https://huggingface.co/Qwen/Qwen3.5-4B) (Apache 2.0) with **thinking off**: the smallest Qwen3.5
 model that's trained for tool use, with vision and LiveCodeBench v6 55.8.
 
+pi is **read-only** here: it reads the project, searches the web and drives Safari, but it can't change files.
+It writes the code in the chat and you paste it. A 4B model kept looping on edit and write calls, retrying
+the same edit when its old text didn't match the file exactly.
+
 Build: LM Studio's staff pick `qwen/qwen3.5-4b`, MLX 4-bit
 ([lmstudio-community/Qwen3.5-4B-MLX-4bit](https://huggingface.co/lmstudio-community/Qwen3.5-4B-MLX-4bit), about 3 GB).
 The staff pick, not a Hugging Face URL: only it has LM Studio's "Enable Thinking" switch.
@@ -139,7 +143,7 @@ Do steps 1–3 of [New machine](#new-machine) as usual, then instead of step 4:
 lms get qwen/qwen3.5-4b --mlx --select                    # pick 4-bit
 lms ls   # the model id must be qwen/qwen3.5-4b, as in mbp-m2-16gb/pi/models.json
 mkdir -p ~/.pi/agent && cp -R dotfiles/pi/ ~/.pi/agent/   # extensions
-cp dotfiles/mbp-m2-16gb/pi/*.json ~/.pi/agent/            # replaces the Mac mini models/settings
+cp dotfiles/mbp-m2-16gb/pi/* ~/.pi/agent/                # replaces the Mac mini models/settings/MCP
 mkdir -p ~/.lmstudio/.internal/user-concrete-model-default-config/qwen
 cp dotfiles/mbp-m2-16gb/lmstudio/qwen3.5-4b.json ~/.lmstudio/.internal/user-concrete-model-default-config/qwen/
 ```
@@ -159,6 +163,15 @@ Settings (`mbp-m2-16gb/`):
   repetition_penalty 1.0), set explicitly because LM Studio fills any missing field from its own chat presets.
 - 4-bit, not 8-bit: on this Mac speed follows the bytes read per token, so 8-bit (about 5 GB) is about 40% slower.
 - `supportsDeveloperRole: false`: Qwen's chat template has no developer role.
+- **Read-only tools** in `settings.json`: `defaultTools` removes `edit`, `write` and `bash` and adds `grep`,
+  `find` and `ls`. bash goes too, because the model can write files with it. Run commands such as
+  `npx tsc --noEmit` yourself and paste the errors back. For one run with full access: `pi --tools +edit,+write,+bash`.
+- `mcp.json`: Safari with `exposure: direct` and `autoEnableCodemode: false`. By default pi reaches MCP tools
+  through codemode scripts, and those scripts can call every tool, `write` included, even when it's turned off.
+  Direct tools also suit a small model better than writing scripts.
+- `APPEND_SYSTEM.md`: tells the model to give each change as a file path plus one code block (the whole file
+  if it's short, or the changed block with 2 lines around it), to go one step at a time and to stop calling tools once
+  it has given the code.
 
 ## Updates
 
