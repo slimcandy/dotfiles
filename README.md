@@ -58,7 +58,7 @@ fish/conf.d/no-telemetry.fish     -> ~/.config/fish/conf.d/: telemetry opt-outs 
 starship/starship.toml            -> ~/.config/starship.toml (needs a Nerd Font)
 pi/                               -> ~/.pi/agent/: pi with the local Qwen3.6-35B-A3B model (Mac mini, 64 GB)
 lmstudio/*.json                   -> ~/.lmstudio/.internal/user-concrete-model-default-config/lmstudio-community/
-mbp-m2-16gb/                      MacBook Pro M2, 16 GB only: Mellum2.1 configs for pi and LM Studio
+mbp-m2-16gb/                      MacBook Pro M2, 16 GB only: Qwen3.5-4B configs for pi and LM Studio
 Brewfile                          brew formulae, casks, VSCodium extensions, global npm packages
 ```
 
@@ -123,48 +123,42 @@ Rules:
 
 ### MacBook Pro M2, 16 GB
 
-**Not for the Mac mini.** The 13" MacBook Pro (2022, base M2, 100 GB/s memory bandwidth) can't hold Qwen3.6-35B-A3B,
-and a dense 9B model there is slow (about a minute before the first token on an 8k-token prompt) and pushes macOS
-into swap at long context. pi runs on
-[Mellum2.1-12B-A2.5B-Thinking](https://huggingface.co/JetBrains/Mellum2.1-12B-A2.5B-Thinking) (JetBrains,
-Apache 2.0) instead. It's a mixture-of-experts model with 2.5B active parameters, so it processes prompts about
-3× faster than a dense 9B, and JetBrains benchmarked it with pi (SWE-bench Verified 47.0).
+**Not for the Mac mini.** The 13" MacBook Pro (2022, base M2, 100 GB/s memory bandwidth) can't hold Qwen3.6-35B-A3B.
+Dense 9B models (Ornith-1.0-9B) and Mellum2.1-12B-A2.5B with its always-on thinking were too slow there. pi runs on
+[Qwen3.5-4B](https://huggingface.co/Qwen/Qwen3.5-4B) (Apache 2.0) with **thinking off**: the smallest Qwen3.5
+model that's trained for tool use, with vision and LiveCodeBench v6 55.8.
 
-Build: [imaadd05/Mellum2.1-12B-A2.5B-Thinking-mlx-nvfp4](https://huggingface.co/imaadd05/Mellum2.1-12B-A2.5B-Thinking-mlx-nvfp4)
-(MLX NVFP4, 6.8 GB, chat template identical to JetBrains' original). NVFP4 rather than MXFP4: it stays closer to
-the original model (lower KL divergence on tool calls) and is only about 5% slower. The 6-bit build (9.9 GB) is too
-big for 16 GB.
+Build: LM Studio's staff pick `qwen/qwen3.5-4b`, MLX 4-bit
+([lmstudio-community/Qwen3.5-4B-MLX-4bit](https://huggingface.co/lmstudio-community/Qwen3.5-4B-MLX-4bit), about 3 GB).
+The staff pick, not a Hugging Face URL: only it has LM Studio's "Enable Thinking" switch.
 
 Do steps 1–3 of [New machine](#new-machine) as usual, then instead of step 4:
 
 ```sh
 ~/.lmstudio/bin/lms bootstrap
-lms get https://huggingface.co/imaadd05/Mellum2.1-12B-A2.5B-Thinking-mlx-nvfp4 -y
-lms ls   # the model id must match "id" in mbp-m2-16gb/pi/models.json; fix it there if not
+lms get qwen/qwen3.5-4b --mlx --select                    # pick 4-bit
+lms ls   # the model id must be qwen/qwen3.5-4b, as in mbp-m2-16gb/pi/models.json
 mkdir -p ~/.pi/agent && cp -R dotfiles/pi/ ~/.pi/agent/   # extensions
 cp dotfiles/mbp-m2-16gb/pi/*.json ~/.pi/agent/            # replaces the Mac mini models/settings
-mkdir -p ~/.lmstudio/.internal/user-concrete-model-default-config/imaadd05
-cp dotfiles/mbp-m2-16gb/lmstudio/*.json ~/.lmstudio/.internal/user-concrete-model-default-config/imaadd05/
+mkdir -p ~/.lmstudio/.internal/user-concrete-model-default-config/qwen
+cp dotfiles/mbp-m2-16gb/lmstudio/qwen3.5-4b.json ~/.lmstudio/.internal/user-concrete-model-default-config/qwen/
 ```
+
+Then open the model's settings in LM Studio (My Models → gear) and check that **Enable Thinking** is off.
 
 Settings (`mbp-m2-16gb/`):
 
-- Context **49,152 tokens**, 16,384 output tokens per turn (as in JetBrains' pi benchmark). Mellum keeps only a
-  1,024-token window in 21 of 28 layers, so its context costs about 14 KB per token: peak memory is about 8 GB.
-  A 32k window would leave only 16k for the conversation after the output reserve.
+- **Thinking off**, in two places: `llm.prediction.reasoning.enableThinking: false` in the LM Studio file, and
+  `reasoning: false` plus thinking level `off` in pi. Thinking costs hundreds of tokens per turn before every tool
+  call, which is most of the wait on this Mac. If pi still shows thinking blocks, LM Studio didn't apply the setting:
+  switch it off by hand in My Models.
+- Context **65,536 tokens**, 16,384 output tokens. Only 8 of the 32 layers keep the full history (the rest are
+  linear attention), so context costs 32 KB per token: 2 GB at 64k. Peak memory is about 6 GB.
 - **Parallel sessions 1.** LM Studio's default reserves memory for 4 conversations; pi only runs one.
-- Sampling as in JetBrains' pi benchmark ("each model's default sampling, temperature 1.0"): temperature 1.0 and
-  everything else neutral (top_p 1.0, top_k 0 = off, min_p 0, repeat_penalty 1.0). They're set explicitly
-  because LM Studio fills any missing field from its own chat presets. JetBrains' 0.6 / 0.95 / 20 is for chat only.
-- Thinking is always on. The template has an `enable_thinking` switch but no effort levels, and LM Studio ignores
-  every way of turning it off (`reasoning_effort: "none"`, `enable_thinking`, `chat_template_kwargs`; tested with
-  Qwen3.6, which has the same switch). So `supportsReasoningEffort: false`. Earlier thinking stays in the history:
-  LM Studio returns it as `reasoning_content`, pi sends it back the same way, and the template reads that field.
-- KV cache quantization stays off: it's experimental in LM Studio and would save only about 0.3 GB here.
-- Close Docker and spare browsers during long sessions: the model needs about 8 GB of the 16.
-
-If pi stops after a turn without running the tool it announced, the MLX engine dropped a tool call it couldn't
-parse. Switch to the GGUF Q4_K_M build of the same model.
+- Sampling: Qwen's non-thinking values (temperature 0.7, top_p 0.8, top_k 20, min_p 0, presence_penalty 1.5,
+  repetition_penalty 1.0), set explicitly because LM Studio fills any missing field from its own chat presets.
+- 4-bit, not 8-bit: on this Mac speed follows the bytes read per token, so 8-bit (about 5 GB) is about 40% slower.
+- `supportsDeveloperRole: false`: Qwen's chat template has no developer role.
 
 ## Updates
 

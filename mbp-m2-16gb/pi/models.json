@@ -7,20 +7,19 @@
       "api": "openai-completions",
       "apiKey": "lmstudio",
       "compat": {
-        "supportsReasoningEffort": false,
-        "thinkingFormat": "openai",
         "supportsDeveloperRole": false,
         "maxTokensField": "max_tokens"
       },
       "models": [
         {
-          "id": "mellum2.1-12b-a2.5b-thinking-mlx-nvfp4",
-          "name": "Mellum2.1 12B-A2.5B Thinking (local, NVFP4)",
-          "reasoning": true,
+          "id": "qwen/qwen3.5-4b",
+          "name": "Qwen3.5 4B (local, MLX 4-bit, no thinking)",
+          "reasoning": false,
           "input": [
-            "text"
+            "text",
+            "image"
           ],
-          "contextWindow": 49152,
+          "contextWindow": 65536,
           "maxTokens": 16384,
           "cost": {
             "input": 0,
@@ -29,11 +28,11 @@
             "cacheWrite": 0
           },
           "samplingParams": {
-            "temperature": 1.0,
-            "top_p": 1.0,
-            "top_k": 0,
+            "temperature": 0.7,
+            "top_p": 0.8,
+            "top_k": 20,
             "min_p": 0,
-            "presence_penalty": 0,
+            "presence_penalty": 1.5,
             "repeat_penalty": 1.0
           }
         }
