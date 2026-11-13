@@ -35,7 +35,7 @@ Do steps 1–3 of [New machine](../README.md#new-machine), then instead of step 
 ```sh
 ~/.lmstudio/bin/lms bootstrap
 lms runtime get omlx -y                                         # LFM3 runs only on LM Studio's oMLX engine
-lms runtime select omlx-mac-arm64-apple-metal-advsimd --latest  # all MLX models now load with oMLX
+lms runtime select omlx-mac-arm64-apple-metal-advsimd --latest  # all MLX models now load with oMLX (or ⌘⇧R → MLX → oMLX)
 lms get https://huggingface.co/LiquidAI/LFM3-1.7B-MLX-4bit -y
 lms get qwen/qwen3.5-4b --mlx --select                          # pick 4-bit
 lms ls   # ids must be lfm3-1.7b-mlx and qwen/qwen3.5-4b, as in pi/models.json
@@ -50,8 +50,9 @@ cp dotfiles/mbp-m2-16gb/lmstudio/qwen3.5-4b.json ~/.lmstudio/.internal/user-conc
 Then open Qwen3.5-4B's settings in LM Studio (My Models → gear) and check that **Enable Thinking** is off.
 
 Run `pi` in a project folder: LM Studio loads LFM3 on the first request. `/model` switches to Qwen3.5-4B, and
-LM Studio unloads LFM3 first, because **Only Keep Last JIT Loaded Model** (Developer → Server Settings) is on by
-default. Keep it on: both models loaded at once push memory into the yellow.
+LM Studio unloads LFM3 first, because **Only Keep Last JIT Loaded Model** is on by default (Settings → Developer →
+On-Demand Loading and Model TTL; the section shows once Developer Mode is on). Keep it on: both models loaded at once
+push memory into the yellow.
 
 ## Settings
 
