@@ -2,6 +2,14 @@
   "defaultProvider": "lmstudio",
   "defaultModel": "lfm3-1.7b-mlx",
   "defaultThinkingLevel": "medium",
+  "defaultTools": [
+    "-edit",
+    "-write",
+    "-bash",
+    "+grep",
+    "+find",
+    "+ls"
+  ],
   "enableInstallTelemetry": false,
   "packages": [
     "npm:pi-web-access",

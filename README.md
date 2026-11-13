@@ -58,7 +58,7 @@ fish/conf.d/no-telemetry.fish     -> ~/.config/fish/conf.d/: telemetry opt-outs 
 starship/starship.toml            -> ~/.config/starship.toml (needs a Nerd Font)
 pi/                               -> ~/.pi/agent/: pi with the local Qwen3.6-35B-A3B model (Mac mini, 64 GB)
 lmstudio/*.json                   -> ~/.lmstudio/.internal/user-concrete-model-default-config/lmstudio-community/
-mbp-m2-16gb/                      MacBook Pro M2, 16 GB only: pi with LFM3-1.7B and Qwen3.5-4B, LM Studio configs
+mbp-m2-16gb/                      MacBook Pro M2, 16 GB only: read-only pi with LFM3-1.7B and Qwen3.5-4B
 Brewfile                          brew formulae, casks, VSCodium extensions, global npm packages
 ```
 

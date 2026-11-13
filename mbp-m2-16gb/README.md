@@ -1,7 +1,8 @@
 # pi on the MacBook Pro M2, 16 GB
 
 The 13" MacBook Pro (2022, base M2, 100 GB/s memory bandwidth) can't hold the Mac mini's Qwen3.6-35B-A3B.
-Here pi runs as a full coding agent (read, write, edit, bash) on one of two small models in LM Studio:
+Here pi is **read-only**: it reads the project, searches the web and drives Safari, then answers with code ready to
+paste. You apply it and fix small errors yourself. It runs on one of two small models in LM Studio:
 
 | Model | In pi | Build | Size | Speed on the M2 | Memory during `next build` |
 |---|---|---|---|---|---|
@@ -15,18 +16,17 @@ about 5 GB for macOS, 1.5 GB for LM Studio, then the model, its context and the 
 
 Give it small tasks. Neither model builds a whole site from one long spec in under 30 minutes.
 
-In a test of five small tasks on a finished Next.js site, one run each, both models changed text across two files
-and fixed a type error in 1–3 minutes. LFM3 also added an FAQ section (5–6 minutes) but couldn't restore one
-missing `</div>` or add a region filter with state. Qwen3.5-4B did those two (3 and 10 minutes) but not the FAQ.
-3 of 5 against 4 of 5 is within the noise of one run. Qwen3.5-4B had thinking on in that test; this config turns
-it off for speed.
+Why read-only: with write access LFM3 does work as an agent, but it falls into loops of fixing its own fixes after
+lint and whole-file checks. In a test of five small tasks on a finished Next.js site, one run each, as an agent it
+solved 3 (Qwen3.5-4B 4, with thinking on; this config turns Qwen's thinking off for speed). Read-only, LFM3 answered
+the region filter it had failed as an agent with a whole file that built on the first paste.
+
+When something fails, run the command yourself and paste the error into the task: without a shell the model can't
+see it and guesses. With only "the build fails", LFM3 once blamed the wrong file.
 
 LFM3 is the default: the same results at twice the speed and with 3 GB less memory. Liquid post-trained it for agent
 harnesses, pi among them, though its model card says it's "not recommended for agentic coding or complex multi-step
 reasoning due to its small size". When it gets stuck on logic, switch to Qwen3.5-4B with `/model`.
-
-Keep projects in folders without spaces in the path: small models write paths unquoted in shell commands and end up
-writing to another folder.
 
 ## Install
 
@@ -72,9 +72,13 @@ push memory into the yellow.
   - Context 65,536 tokens: 32 KB per token, 2 GB at 64k.
 - Both: **parallel sessions 1** in the LM Studio files (LM Studio reserves memory for 4 by default), and
   `supportsDeveloperRole: false` (neither chat template has a developer role).
-- `mcp.json`: Safari with `exposure: direct` and `autoEnableCodemode: false`. With codemode on, a 4B model in the
-  test sent 479 empty calls to its script tool instead of editing files.
-- `APPEND_SYSTEM.md`: six rules, each from a failure in the test: stay in the project folder and quote paths, run
-  `npm install` before the build, change only the broken line, read the file again after a failed edit, one change
-  at a time, stop and list the changes. With them LFM3 solved the same 3 of 5 tasks: they keep it in the project
-  folder but don't fix its reasoning.
+- **Read-only tools** in `settings.json`: `defaultTools` removes `edit`, `write` and `bash` and adds `grep`, `find`
+  and `ls`. bash goes too, because the model can write files with it. For one run with full access:
+  `pi --tools +edit,+write,+bash`.
+- `mcp.json`: Safari with `exposure: direct` and `autoEnableCodemode: false`. Codemode scripts can call every tool,
+  `write` included, even when it's turned off, and a 4B model in a test sent 479 empty calls to it.
+- `APPEND_SYSTEM.md`: find the code with grep first and read each file once; give each change as a file path plus one
+  code block ready to paste (the whole file if it's short, otherwise the changed block with 2 lines around it, never a
+  diff); change only what the task needs and never generated files such as `next-env.d.ts`; ask for the exact error
+  instead of guessing; one step at a time; stop calling tools once the code is given. Each rule comes from a wrong
+  answer in the test: a diff with the removed line missing, an unasked "fix" to `next-env.d.ts`, 59 file reads.
