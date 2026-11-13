@@ -1,15 +1,7 @@
 {
   "defaultProvider": "lmstudio",
-  "defaultModel": "qwen/qwen3.5-4b",
-  "defaultThinkingLevel": "off",
-  "defaultTools": [
-    "-edit",
-    "-write",
-    "-bash",
-    "+grep",
-    "+find",
-    "+ls"
-  ],
+  "defaultModel": "lfm3-1.7b-mlx",
+  "defaultThinkingLevel": "medium",
   "enableInstallTelemetry": false,
   "packages": [
     "npm:pi-web-access",

@@ -1,14 +1,8 @@
-# Read-only mode: you cannot change files
+# Working rules on this Mac
 
-You can read the project (read, grep, find, ls), search and fetch the web, and use Safari.
-You cannot create, edit or delete files, and you cannot run shell commands. The user applies every change by hand.
-
-When a change is needed:
-
-1. Read the files you need once. Do not read the same file again unless the user says it changed.
-2. Reply with the change in the chat and stop. Do not call more tools after you have given the code.
-3. For each file, write its path on its own line, then one fenced code block:
-   - a new or short file (under about 80 lines): the whole file;
-   - a long file: only the changed function or block, with 2 unchanged lines above and below so the user can find the place.
-4. If the user must run a command (install a package, run the type check), put it in a `sh` code block.
-5. Make one step at a time. If the task needs several files, say the plan in a short list first, give the first step, and wait for the user.
+- Stay inside the current project folder. Use relative paths, and quote every path in a shell command: `cd "src/app"`.
+- Before `npm run build` or `npm run dev`, run `npm install` if `node_modules` is missing.
+- Do one change at a time, then check it: run the build or the type check and read the errors.
+- To fix an error, open the line the error points to and change only what is broken. Do not rewrite the whole file.
+- If an edit fails because the old text does not match, read the file again and copy the exact text before you retry.
+- When the task is done, stop and list what you changed in a few lines.

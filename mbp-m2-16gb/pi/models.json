@@ -12,6 +12,30 @@
       },
       "models": [
         {
+          "id": "lfm3-1.7b-mlx",
+          "name": "LFM3 1.7B (local, MLX 4-bit, oMLX engine)",
+          "reasoning": true,
+          "input": [
+            "text"
+          ],
+          "contextWindow": 65536,
+          "maxTokens": 16384,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0
+          },
+          "samplingParams": {
+            "temperature": 0.1,
+            "top_k": 50,
+            "repeat_penalty": 1.1
+          },
+          "compat": {
+            "supportsReasoningEffort": false
+          }
+        },
+        {
           "id": "qwen/qwen3.5-4b",
           "name": "Qwen3.5 4B (local, MLX 4-bit, no thinking)",
           "reasoning": false,

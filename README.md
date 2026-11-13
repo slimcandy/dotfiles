@@ -58,7 +58,7 @@ fish/conf.d/no-telemetry.fish     -> ~/.config/fish/conf.d/: telemetry opt-outs 
 starship/starship.toml            -> ~/.config/starship.toml (needs a Nerd Font)
 pi/                               -> ~/.pi/agent/: pi with the local Qwen3.6-35B-A3B model (Mac mini, 64 GB)
 lmstudio/*.json                   -> ~/.lmstudio/.internal/user-concrete-model-default-config/lmstudio-community/
-mbp-m2-16gb/                      MacBook Pro M2, 16 GB only: read-only pi with Qwen3.5-4B, LM Studio config
+mbp-m2-16gb/                      MacBook Pro M2, 16 GB only: pi with LFM3-1.7B and Qwen3.5-4B, LM Studio configs
 Brewfile                          brew formulae, casks, VSCodium extensions, global npm packages
 ```
 
@@ -124,54 +124,80 @@ Rules:
 ### MacBook Pro M2, 16 GB
 
 **Not for the Mac mini.** The 13" MacBook Pro (2022, base M2, 100 GB/s memory bandwidth) can't hold Qwen3.6-35B-A3B.
-Dense 9B models (Ornith-1.0-9B) and Mellum2.1-12B-A2.5B with its always-on thinking were too slow there. pi runs on
-[Qwen3.5-4B](https://huggingface.co/Qwen/Qwen3.5-4B) (Apache 2.0) with **thinking off**: the smallest Qwen3.5
-model that's trained for tool use, with vision and LiveCodeBench v6 55.8.
+pi runs here as a full coding agent (read, write, edit, bash) on one of two small models:
 
-pi is **read-only** here: it reads the project, searches the web and drives Safari, but it can't change files.
-It writes the code in the chat and you paste it. A 4B model kept looping on edit and write calls, retrying
-the same edit when its old text didn't match the file exactly.
+| Model | In pi | Build | Size | Speed on the M2 | Memory during `next build` |
+|---|---|---|---|---|---|
+| [LFM3-1.7B](https://huggingface.co/LiquidAI/LFM3-1.7B) | default | [LiquidAI/LFM3-1.7B-MLX-4bit](https://huggingface.co/LiquidAI/LFM3-1.7B-MLX-4bit) | 1 GB | ~70 tokens/s | ~10 GB |
+| [Qwen3.5-4B](https://huggingface.co/Qwen/Qwen3.5-4B) | fallback | LM Studio's staff pick `qwen/qwen3.5-4b`, MLX 4-bit | 3 GB | ~30 tokens/s | ~13 GB |
 
-Build: LM Studio's staff pick `qwen/qwen3.5-4b`, MLX 4-bit
-([lmstudio-community/Qwen3.5-4B-MLX-4bit](https://huggingface.co/lmstudio-community/Qwen3.5-4B-MLX-4bit), about 3 GB).
-The staff pick, not a Hugging Face URL: only it has LM Studio's "Enable Thinking" switch.
+Speed and memory were measured on the Mac mini and scaled to the M2's memory bandwidth, not measured on the
+MacBook. Memory is the whole Mac: about 5 GB for macOS, 1.5 GB for LM Studio, then the model, its context and the build.
+
+**Give it small tasks.** Neither model builds a whole site from one long spec in under 30 minutes. In a test of
+five small tasks on a finished Next.js site, one run each, both changed text across two files and fixed a type error
+in 1–3 minutes. LFM3 also added an FAQ section (5–6 minutes) but couldn't restore one missing `</div>` or add a
+region filter with state. Qwen3.5-4B did both of those (3 and 10 minutes) but not the FAQ. That's 3 of 5 against
+4 of 5, within the noise of one run. Qwen3.5-4B ran with thinking on in that test; this config turns it off for speed.
+LFM3 is the default: the same results at twice the speed and with 3 GB less memory. Liquid post-trained it for agent
+harnesses, pi among them, but its model card also says it's "not recommended for agentic coding or complex
+multi-step reasoning due to its small size". When LFM3 gets stuck on logic, switch to Qwen3.5-4B with `/model`.
+
+Keep projects in folders without spaces in the path: small models write paths unquoted in shell commands and
+end up writing to another folder.
 
 Do steps 1–3 of [New machine](#new-machine) as usual, then instead of step 4:
 
 ```sh
 ~/.lmstudio/bin/lms bootstrap
-lms get qwen/qwen3.5-4b --mlx --select                    # pick 4-bit
-lms ls   # the model id must be qwen/qwen3.5-4b, as in mbp-m2-16gb/pi/models.json
-mkdir -p ~/.pi/agent && cp -R dotfiles/pi/ ~/.pi/agent/   # extensions
-cp dotfiles/mbp-m2-16gb/pi/* ~/.pi/agent/                # replaces the Mac mini models/settings/MCP
+lms runtime get omlx -y                                         # LFM3 runs only on LM Studio's oMLX engine
+lms runtime select omlx-mac-arm64-apple-metal-advsimd --latest  # all MLX models now load with oMLX
+lms get https://huggingface.co/LiquidAI/LFM3-1.7B-MLX-4bit -y
+lms get qwen/qwen3.5-4b --mlx --select                          # pick 4-bit
+lms ls   # ids must be lfm3-1.7b-mlx and qwen/qwen3.5-4b, as in mbp-m2-16gb/pi/models.json
+mkdir -p ~/.pi/agent && cp -R dotfiles/pi/ ~/.pi/agent/         # extensions
+cp dotfiles/mbp-m2-16gb/pi/* ~/.pi/agent/                      # replaces the Mac mini models/settings/MCP
+mkdir -p ~/.lmstudio/.internal/user-concrete-model-default-config/LiquidAI
+cp dotfiles/mbp-m2-16gb/lmstudio/LFM3-1.7B-MLX-4bit.json ~/.lmstudio/.internal/user-concrete-model-default-config/LiquidAI/
 mkdir -p ~/.lmstudio/.internal/user-concrete-model-default-config/qwen
 cp dotfiles/mbp-m2-16gb/lmstudio/qwen3.5-4b.json ~/.lmstudio/.internal/user-concrete-model-default-config/qwen/
 ```
 
-Then open the model's settings in LM Studio (My Models → gear) and check that **Enable Thinking** is off.
+Then open Qwen3.5-4B's settings in LM Studio (My Models → gear) and check that **Enable Thinking** is off.
+Run `pi` in a project folder: LM Studio loads LFM3 on the first request. `/model` switches to Qwen3.5-4B, and
+LM Studio unloads LFM3 first, because **Only Keep Last JIT Loaded Model** (Developer → Server Settings) is on
+by default. Keep it on: both models loaded at once push memory into the yellow.
 
 Settings (`mbp-m2-16gb/`):
 
-- **Thinking off**, in two places: `llm.prediction.reasoning.enableThinking: false` in the LM Studio file, and
-  `reasoning: false` plus thinking level `off` in pi. Thinking costs hundreds of tokens per turn before every tool
-  call, which is most of the wait on this Mac. If pi still shows thinking blocks, LM Studio didn't apply the setting:
-  switch it off by hand in My Models.
-- Context **65,536 tokens**, 16,384 output tokens. Only 8 of the 32 layers keep the full history (the rest are
-  linear attention), so context costs 32 KB per token: 2 GB at 64k. Peak memory is about 6 GB.
-- **Parallel sessions 1.** LM Studio's default reserves memory for 4 conversations; pi only runs one.
-- Sampling: Qwen's non-thinking values (temperature 0.7, top_p 0.8, top_k 20, min_p 0, presence_penalty 1.5,
-  repetition_penalty 1.0), set explicitly because LM Studio fills any missing field from its own chat presets.
-- 4-bit, not 8-bit: on this Mac speed follows the bytes read per token, so 8-bit (about 5 GB) is about 40% slower.
-- `supportsDeveloperRole: false`: Qwen's chat template has no developer role.
-- **Read-only tools** in `settings.json`: `defaultTools` removes `edit`, `write` and `bash` and adds `grep`,
-  `find` and `ls`. bash goes too, because the model can write files with it. Run commands such as
-  `npx tsc --noEmit` yourself and paste the errors back. For one run with full access: `pi --tools +edit,+write,+bash`.
-- `mcp.json`: Safari with `exposure: direct` and `autoEnableCodemode: false`. By default pi reaches MCP tools
-  through codemode scripts, and those scripts can call every tool, `write` included, even when it's turned off.
-  Direct tools also suit a small model better than writing scripts.
-- `APPEND_SYSTEM.md`: tells the model to give each change as a file path plus one code block (the whole file
-  if it's short, or the changed block with 2 lines around it), to go one step at a time and to stop calling tools once
-  it has given the code.
+- **LFM3-1.7B**
+  - Thinking is always on: Liquid says turning it off "can be inconsistent". `reasoning: true` shows it in pi.
+    `supportsReasoningEffort: false`, as in Liquid's pi guide, so pi doesn't send `reasoning_effort`, and the
+    thinking level has no effect.
+  - Sampling: Liquid's values for chat, tool use, agents and coding (temperature 0.1, top_k 50,
+    repetition_penalty 1.1).
+  - Context 65,536 tokens, 16,384 output tokens. Only 6 of the 24 layers keep the full history (13 are short
+    convolutions, 5 see the last 256 tokens), so 64k of context costs about 0.8 GB.
+  - MLX 4-bit on oMLX: about 70 tokens/s on the M2. LM Studio's standard MLX engine (mlx-llm) can't load the
+    `lfm3` architecture. 8-bit would be about 40 tokens/s: on this Mac speed follows the bytes read per token.
+- **Qwen3.5-4B**
+  - **Thinking off**, in two places: `llm.prediction.reasoning.enableThinking: false` in the LM Studio file, and
+    `reasoning: false` in pi. Thinking costs hundreds of tokens per turn before every tool call, which is most of
+    the wait on this Mac. If pi still shows thinking blocks, switch it off by hand in My Models. The staff pick, not
+    a Hugging Face URL: only it has LM Studio's "Enable Thinking" switch.
+  - Sampling: Qwen's non-thinking values (temperature 0.7, top_p 0.8, top_k 20, min_p 0, presence_penalty 1.5,
+    repetition_penalty 1.0), set explicitly because LM Studio fills any missing field from its own chat presets.
+  - Context 65,536 tokens. 8 of the 32 layers keep the full history, so context costs 32 KB per token: 2 GB at 64k.
+- Both: **parallel sessions 1** in the LM Studio files. LM Studio's default reserves memory for 4 conversations;
+  pi only runs one. `supportsDeveloperRole: false`: neither chat template has a developer role.
+- Tools: pi's defaults (read, bash, edit, write).
+- `mcp.json`: Safari with `exposure: direct` and `autoEnableCodemode: false`. With codemode on, pi offers a tool
+  that runs scripts, and a 4B model in a test sent it 479 empty calls instead of editing files.
+- `APPEND_SYSTEM.md`: six short rules, each from a failure in the test: stay in the project folder and quote paths,
+  run `npm install` before the build (`next: command not found`), change only the broken line (for one missing
+  `</div>`, LFM3 made 9 edits and 36 shell calls and left the tags wrong), read the file again after a failed
+  edit, one change at a time, stop and list the changes. With these rules LFM3 solved the same 3 of 5 tasks: they
+  keep it in the project folder, but they don't fix its reasoning.
 
 ## Updates
 
