@@ -90,22 +90,24 @@ Same model files, same pi. The 8-bit build (on LM Studio) was slower, 47 tokens/
 
 ### Client: MacBook Pro (or any Mac on the Wi-Fi)
 
-1. On the Mac mini, make a key for it: `python3 dotfiles/omlx/setup.py macbook-pro-m2`. It lands in `~/.config/omlx/macbook-pro-m2.key`.
-2. On the MacBook, do steps 1–3 of [New machine](#new-machine), then:
+1. Copy the API key from the oMLX admin page: <http://mac-mini-m4-pro.local:8000/admin> (it opens from the MacBook too).
+2. On the MacBook, do steps 1–3 of [New machine](#new-machine), then paste it:
 
    ```sh
    mkdir -p ~/.pi/agent && cp -R dotfiles/pi/ ~/.pi/agent/
-   mkdir -p ~/.config/omlx && chmod 700 ~/.config/omlx
-   pbpaste > ~/.config/omlx/api-key && chmod 600 ~/.config/omlx/api-key   # the key, copied from the Mac mini
+   mkdir -p ~/.config/omlx && pbpaste > ~/.config/omlx/api-key && chmod 600 ~/.config/omlx/api-key
    ```
 
-That's all: `pi/models.json` is the same on both Macs. The Mac mini reaches itself by its `.local` name too.
+That's all: `pi/models.json` is the same on both Macs. The key sits in a file, not in `models.json`, only so this public repo has no secret in it.
+The Mac mini reaches itself by its `.local` name too.
+
+Optional: give each Mac its own key, so a lost MacBook can be cut off alone. Make it in the admin page, or run `python3 dotfiles/omlx/setup.py macbook-pro-m2` on the Mac mini (it lands in `~/.config/omlx/macbook-pro-m2.key`).
 If `mac-mini-m4-pro.local` doesn't resolve, use the Mac mini's IP in `baseUrl`. Away from home there is no model.
 
 ### Security
 
 - oMLX refuses to listen on the network without an API key, and answers 401 to anyone without one.
-- Each Mac has its own **sub-key**, in `~/.config/omlx/api-key` (mode 600). pi reads it on every request (`"apiKey": "!cat ~/.config/omlx/api-key"`), so no key is in this repo. Revoke a lost Mac's key in the admin page (or delete it from `auth.sub_keys` in `~/.omlx/settings.json`); the others keep working.
+- The key is in `~/.config/omlx/api-key` (mode 600). pi reads it on every request (`"apiKey": "!cat ~/.config/omlx/api-key"`), so no key is in this repo. With per-Mac **sub-keys**, revoke a lost Mac's key in the admin page (or delete it from `auth.sub_keys` in `~/.omlx/settings.json`); the others keep working.
 - The router doesn't forward port 8000, so the server is reachable only from the home network.
 - Traffic is plain HTTP: on your own WPA2/WPA3 Wi-Fi that's fine. On a network you don't trust, keep oMLX on `127.0.0.1` and tunnel instead: `ssh -N -L 8000:127.0.0.1:8000 alex@mac-mini-m4-pro.local` (needs Remote Login on the Mac mini), with `baseUrl` `http://127.0.0.1:8000/v1`.
 
