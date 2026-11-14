@@ -1,0 +1,6 @@
+{
+  "server": { "host": "0.0.0.0", "port": 8000 },
+  "model": { "model_dirs": ["~/.omlx/models"], "model_dir": "~/.omlx/models" },
+  "sampling": { "max_context_window": 131072 },
+  "cache": { "enabled": true, "hot_cache_max_size": "8GB" }
+}

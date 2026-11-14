@@ -1,41 +1,26 @@
 {
   "$schema": "https://pi.dev/schemas/models.schema.json",
   "providers": {
-    "lmstudio": {
-      "name": "LM Studio",
-      "baseUrl": "http://127.0.0.1:1234/v1",
+    "omlx": {
+      "name": "oMLX on the Mac mini",
+      "baseUrl": "http://mac-mini-m4-pro.local:8000/v1",
       "api": "openai-completions",
-      "apiKey": "lmstudio",
+      "apiKey": "!cat ~/.config/omlx/api-key",
       "compat": {
         "supportsReasoningEffort": true,
-        "thinkingFormat": "openai",
+        "thinkingFormat": "qwen-chat-template",
         "supportsDeveloperRole": false,
         "maxTokensField": "max_tokens"
       },
       "models": [
         {
-          "id": "qwen3.6-35b-a3b-mlx",
-          "name": "Qwen3.6 35B-A3B (local, fast MoE)",
+          "id": "Qwen3.6-35B-A3B-MLX-6bit",
+          "name": "Qwen3.6 35B-A3B 6-bit (oMLX)",
           "reasoning": true,
-          "input": [
-            "text",
-            "image"
-          ],
-          "contextWindow": 98304,
+          "input": ["text", "image"],
+          "contextWindow": 131072,
           "maxTokens": 32768,
-          "cost": {
-            "input": 0,
-            "output": 0,
-            "cacheRead": 0,
-            "cacheWrite": 0
-          },
-          "thinkingLevelMap": {
-            "off": "none",
-            "minimal": "medium",
-            "low": "medium",
-            "medium": "medium",
-            "high": "medium"
-          },
+          "cost": { "input": 0, "output": 0, "cacheRead": 0, "cacheWrite": 0 },
           "samplingParams": {
             "temperature": 0.6,
             "top_p": 0.95,
@@ -44,11 +29,7 @@
             "presence_penalty": 0
           },
           "samplingParamsByThinkingLevel": {
-            "off": {
-              "temperature": 0.7,
-              "top_p": 0.8,
-              "presence_penalty": 1.5
-            }
+            "off": { "temperature": 0.7, "top_p": 0.8, "presence_penalty": 1.5 }
           }
         }
       ]

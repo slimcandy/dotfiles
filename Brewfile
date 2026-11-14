@@ -24,8 +24,6 @@ cask "claude"
 cask "claude-code@latest"
 # Game client
 cask "gog-galaxy"
-# Discover, download, and run local LLMs
-cask "lm-studio"
 # Speech recognition tool
 cask "macwhisper"
 # Playstation 2 Emulator

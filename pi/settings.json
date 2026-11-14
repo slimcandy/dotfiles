@@ -1,6 +1,6 @@
 {
-  "defaultProvider": "lmstudio",
-  "defaultModel": "qwen3.6-35b-a3b-mlx",
+  "defaultProvider": "omlx",
+  "defaultModel": "Qwen3.6-35B-A3B-MLX-6bit",
   "defaultThinkingLevel": "medium",
   "enableInstallTelemetry": false,
   "packages": [
