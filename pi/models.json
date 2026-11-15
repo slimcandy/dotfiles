@@ -14,13 +14,21 @@
       },
       "models": [
         {
-          "id": "Qwen3.6-35B-A3B-MLX-6bit",
-          "name": "Qwen3.6 35B-A3B 6-bit (oMLX)",
+          "id": "Qwen3.6-35B-A3B-oQ6e-mtp",
+          "name": "Qwen3.6 35B-A3B oQ6e + MTP (oMLX)",
           "reasoning": true,
-          "input": ["text", "image"],
+          "input": [
+            "text",
+            "image"
+          ],
           "contextWindow": 131072,
           "maxTokens": 32768,
-          "cost": { "input": 0, "output": 0, "cacheRead": 0, "cacheWrite": 0 },
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0
+          },
           "samplingParams": {
             "temperature": 0.6,
             "top_p": 0.95,
@@ -29,7 +37,11 @@
             "presence_penalty": 0
           },
           "samplingParamsByThinkingLevel": {
-            "off": { "temperature": 0.7, "top_p": 0.8, "presence_penalty": 1.5 }
+            "off": {
+              "temperature": 0.7,
+              "top_p": 0.8,
+              "presence_penalty": 1.5
+            }
           }
         }
       ]

@@ -60,18 +60,22 @@ GUI apps (Steam, Screen Studio, ...) are set in their own preferences.
 
 Three layers, one model for every Mac at home:
 
-- **Qwen3.6-35B-A3B**, MLX 6-bit ([lmstudio-community/Qwen3.6-35B-A3B-MLX-6bit](https://huggingface.co/lmstudio-community/Qwen3.6-35B-A3B-MLX-6bit), 29 GB). A mixture of experts: 35B parameters, 3B used per token, so it's fast on a Mac.
+- **Qwen3.6-35B-A3B**, oQ6e with its MTP head ([Jundot/Qwen3.6-35B-A3B-oQ6e-mtp](https://huggingface.co/Jundot/Qwen3.6-35B-A3B-oQ6e-mtp), 30 GB, made by oMLX's author). A mixture of experts: 35B parameters, 3B used per token, so it's fast on a Mac. The MTP head guesses the next tokens and the model checks them in one step.
 - **[oMLX](https://github.com/jundot/omlx)** serves it from the Mac mini M4 Pro (64 GB) on `mac-mini-m4-pro.local:8000`.
 - **[pi](https://github.com/earendil-works/pi)** runs on each Mac, edits that Mac's files and sends only the prompts to the Mac mini. The MacBook Pro M2 with 16 GB doesn't run a model at all.
 
 In a 30-minute benchmark (pi building a whole Next.js site from one prompt, Mac mini M4 Pro):
 
-| Server | Result | Time | Generation | Model memory |
-|---|---|---|---|---|
-| oMLX 0.7.3 | builds | 10.7 min | 66 tokens/s | 34 GB |
-| LM Studio | builds | 14.9 min | 51 tokens/s | 37 GB |
+| Model files | Server | Result | Time | Generation | Model memory |
+|---|---|---|---|---|---|
+| oQ6e-mtp, MTP on | oMLX 0.7.3 | builds | 11.2 min | **86 tokens/s** | 37 GB |
+| oQ6e-mtp, MTP off | oMLX 0.7.3 | builds | 10.6 min | 60 tokens/s | 35 GB |
+| lmstudio-community 6-bit | oMLX 0.7.3 | builds | 10.7 min | 66 tokens/s | 34 GB |
+| lmstudio-community 6-bit | LM Studio | builds | 14.9 min | 51 tokens/s | 37 GB |
 
-Same model files, same pi. The 8-bit build (on LM Studio) was slower, 47 tokens/s, for no gain in the result. Qwen3.8-27B, a dense model, ran at 15 tokens/s; Ornith-1.5-35B needed twice the time.
+Same prompt, same pi. MTP makes generation 30 % faster for 3 GB more memory; the MTP run's agent did more work (77 tool calls, not 35), so its total time isn't shorter.
+oQ6e alone is a little slower than plain 6-bit. lmstudio-community's builds can't use MTP: the conversion drops the head.
+The 8-bit build was slower, 47 tokens/s, for no gain in the result. Qwen3.8-27B, a dense model, ran at 15 tokens/s; Ornith-1.5-35B needed twice the time.
 
 ### Server: Mac mini
 
@@ -91,7 +95,7 @@ Same model files, same pi. The 8-bit build (on LM Studio) was slower, 47 tokens/
    mkdir -p ~/.config/omlx && pbpaste > ~/.config/omlx/api-key && chmod 600 ~/.config/omlx/api-key
    ```
 
-4. Download the model into `~/.omlx/models/Qwen3.6-35B-A3B-MLX-6bit`: with the Hugging Face downloader in the admin page (repo `lmstudio-community/Qwen3.6-35B-A3B-MLX-6bit`), or with Hugging Face's `hf download … --local-dir`.
+4. Download the model with the Hugging Face downloader in the admin page (repo `Jundot/Qwen3.6-35B-A3B-oQ6e-mtp`). It lands in `~/.omlx/models/Jundot/Qwen3.6-35B-A3B-oQ6e-mtp`.
 
 oMLX fills in everything the two files leave out with its defaults. The key lives only in `~/.omlx/settings.json`, which is never copied back into this repo.
 
@@ -122,17 +126,20 @@ If `mac-mini-m4-pro.local` doesn't resolve, use the Mac mini's IP in `baseUrl`. 
 
 **oMLX** (`omlx/`):
 
-- Context 131,072 tokens, as Qwen recommends ("at least 128K to preserve thinking"). Long sessions reach 70–90K; the whole Mac stays under 50 GB.
+- Context 262,144 tokens, the model's full window. It's only a limit: memory goes to the context actually used, and oMLX's own context benchmark fits all 262K on this Mac. pi stops at 131K (see below).
+- Lightning MTP on (`mtp_enabled`): in the benchmark 89 % of the guessed tokens were accepted, 3.3 tokens per step. It speeds up one request at a time (parallel requests usually decode without it) and turns itself off for requests with presence or repetition penalties.
 - Qwen's sampling for precise coding: temperature 0.6, top_p 0.95, top_k 20, min_p 0, presence_penalty 0, repetition_penalty 1.0. They're set twice, on the model (`model_settings.json`) and as the server's Default Profile (`sampling` in `settings.json`), so the admin page shows the same numbers everywhere. pi also sends them with every request, and the request wins.
 - `preserve_thinking`: earlier turns keep their reasoning, as Qwen recommends for agents. It also keeps each request a prefix of the next, so the cache hits.
 - 8 GB in-memory cache on top of the SSD cache. Measured on a 21K-token context: a cache hit takes 0.3 s (2.2 s from the SSD alone, 0.7 s in LM Studio). After a restart the SSD cache still answers in 2.2 s, where LM Studio reads the whole context again (28 s).
+  One 11-minute agent run writes 2–3 GB of cache to the SSD, so a working day is tens of GB: about 1 % of a typical 2 TB SSD's rated endurance per year.
+  `hot_cache_write_through` stays off, so blocks reach the SSD only when they leave the memory cache.
 - Up to 8 requests at once (oMLX's default), so the Mac mini and the MacBook can work at the same time; they share the GPU, so each runs slower.
 
 **pi** (`pi/`):
 
-- `thinkingFormat: "qwen-chat-template"` sends Qwen's own `enable_thinking` and `preserve_thinking`. Thinking really turns off with `/thinking off` (or `--thinking off`), which LM Studio ignored. Off, pi switches to Qwen's non-thinking sampling (temperature 0.7, top_p 0.8, presence_penalty 1.5).
+- `thinkingFormat: "qwen-chat-template"` sends Qwen's own `enable_thinking` and `preserve_thinking`. Thinking really turns off with `/thinking off` (or `--thinking off`), which LM Studio ignored. Off, pi switches to Qwen's non-thinking sampling (temperature 0.7, top_p 0.8, presence_penalty 1.5); that penalty turns MTP off, but those answers are short anyway.
 - `supportsDeveloperRole: false`: Qwen's chat template has no developer role.
-- `contextWindow` 131,072 matches the server; pi compacts the session before it runs out. `maxTokens` 32,768.
+- `contextWindow` 131,072, half the server's limit: pi compacts the session before it gets there. Past ~100K every cache miss means minutes of rereading (oMLX's context benchmark averages 196 tokens/s over 262K) and the model loses details in the middle. `maxTokens` 32,768.
 - `packages` lists npm packages, which pi installs on its first start:
   - [`pi-web-access`](https://www.npmjs.com/package/pi-web-access): web search, page fetch and PDF text,
     no API key needed. Searches go to Exa's hosted service by default.

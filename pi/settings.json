@@ -1,6 +1,6 @@
 {
   "defaultProvider": "omlx",
-  "defaultModel": "Qwen3.6-35B-A3B-MLX-6bit",
+  "defaultModel": "Qwen3.6-35B-A3B-oQ6e-mtp",
   "defaultThinkingLevel": "medium",
   "enableInstallTelemetry": false,
   "packages": [
