@@ -5,7 +5,7 @@
       "name": "oMLX on the Mac mini",
       "baseUrl": "http://mac-mini-m4-pro.local:8000/v1",
       "api": "openai-completions",
-      "apiKey": "!cat ~/.config/omlx/api-key",
+      "apiKey": "PASTE-THE-KEY-FROM-THE-OMLX-ADMIN-PAGE",
       "compat": {
         "supportsReasoningEffort": true,
         "thinkingFormat": "qwen-chat-template",

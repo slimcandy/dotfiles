@@ -89,11 +89,8 @@ The 8-bit build was slower, 47 tokens/s, for no gain in the result. Qwen3.8-27B,
    If oMLX is already running, quit it first: it rewrites these files when it exits.
    The copy has no API key in it, so on a Mac that had one you make a new one in step 3.
 2. Open oMLX. When macOS asks whether its Python may accept incoming connections, allow it.
-3. Open the admin page, <http://127.0.0.1:8000/admin>. It asks you to create the API key. Copy it, then give it to pi on this Mac:
-
-   ```sh
-   mkdir -p ~/.config/omlx && pbpaste > ~/.config/omlx/api-key && chmod 600 ~/.config/omlx/api-key
-   ```
+3. Open the admin page, <http://127.0.0.1:8000/admin>. It asks you to create the API key. Copy it, open `~/.pi/agent/models.json`
+   in any editor and paste it over `PASTE-THE-KEY-FROM-THE-OMLX-ADMIN-PAGE`.
 
 4. Download the model with the Hugging Face downloader in the admin page (repo `Jundot/Qwen3.6-35B-A3B-oQ6e-mtp`). It lands in `~/.omlx/models/Jundot/Qwen3.6-35B-A3B-oQ6e-mtp`.
 
@@ -101,16 +98,11 @@ oMLX fills in everything the two files leave out with its defaults. The key live
 
 ### Client: MacBook Pro (or any Mac on the Wi-Fi)
 
-1. Copy the API key from the oMLX admin page: <http://mac-mini-m4-pro.local:8000/admin> (it opens from the MacBook too).
-2. On the MacBook, do steps 1–3 of [New machine](#new-machine), then paste it:
+1. On the MacBook, do steps 1–3 of [New machine](#new-machine), then copy `dotfiles/pi/` to `~/.pi/agent/`.
+2. Copy the API key from the oMLX admin page, <http://mac-mini-m4-pro.local:8000/admin> (it opens from the MacBook too),
+   and paste it into `~/.pi/agent/models.json` over `PASTE-THE-KEY-FROM-THE-OMLX-ADMIN-PAGE`.
 
-   ```sh
-   mkdir -p ~/.pi/agent && cp -R dotfiles/pi/ ~/.pi/agent/
-   mkdir -p ~/.config/omlx && pbpaste > ~/.config/omlx/api-key && chmod 600 ~/.config/omlx/api-key
-   ```
-
-That's all: `pi/models.json` is the same on both Macs. The key sits in a file, not in `models.json`, only so this public repo has no secret in it.
-The Mac mini reaches itself by its `.local` name too.
+That's all: `models.json` is the same on both Macs, apart from the key. The Mac mini reaches itself by its `.local` name too.
 
 Optional: give each Mac its own key, so a lost MacBook can be cut off alone. Make it as a sub-key in the admin page.
 If `mac-mini-m4-pro.local` doesn't resolve, use the Mac mini's IP in `baseUrl`. Away from home there is no model.
@@ -118,7 +110,8 @@ If `mac-mini-m4-pro.local` doesn't resolve, use the Mac mini's IP in `baseUrl`. 
 ### Security
 
 - oMLX refuses to listen on the network without an API key, and answers 401 to anyone without one.
-- The key is in `~/.config/omlx/api-key` (mode 600). pi reads it on every request (`"apiKey": "!cat ~/.config/omlx/api-key"`), so no key is in this repo. With per-Mac **sub-keys**, revoke a lost Mac's key in the admin page (or delete it from `auth.sub_keys` in `~/.omlx/settings.json`); the others keep working.
+- The key lives only in `~/.pi/agent/models.json` on each Mac; this repo has the placeholder. Copying `pi/` from the repo again
+  puts the placeholder back, so paste the key again after that, and never copy `~/.pi/agent/models.json` back into the repo. With per-Mac **sub-keys**, revoke a lost Mac's key in the admin page (or delete it from `auth.sub_keys` in `~/.omlx/settings.json`); the others keep working.
 - The router doesn't forward port 8000, so the server is reachable only from the home network.
 - Traffic is plain HTTP: on your own WPA2/WPA3 Wi-Fi that's fine. On a network you don't trust, keep oMLX on `127.0.0.1` and tunnel instead: `ssh -N -L 8000:127.0.0.1:8000 alex@mac-mini-m4-pro.local` (needs Remote Login on the Mac mini), with `baseUrl` `http://127.0.0.1:8000/v1`.
 
@@ -128,6 +121,7 @@ If `mac-mini-m4-pro.local` doesn't resolve, use the Mac mini's IP in `baseUrl`. 
 
 - Context 262,144 tokens, the model's full window. It's only a limit: memory goes to the context actually used, and oMLX's own context benchmark fits all 262K on this Mac. pi stops at 131K (see below).
 - Lightning MTP on (`mtp_enabled`): in the benchmark 89 % of the guessed tokens were accepted, 3.3 tokens per step. It speeds up one request at a time (parallel requests usually decode without it) and turns itself off for requests with presence or repetition penalties.
+- Prompt processing stays on the GPU: oMLX's own ANE prefill test on this Mac recommends it over the Neural Engine (`qwen35_ane_prefill_enabled` off).
 - Qwen's sampling for precise coding: temperature 0.6, top_p 0.95, top_k 20, min_p 0, presence_penalty 0, repetition_penalty 1.0. They're set twice, on the model (`model_settings.json`) and as the server's Default Profile (`sampling` in `settings.json`), so the admin page shows the same numbers everywhere. pi also sends them with every request, and the request wins.
 - `preserve_thinking`: earlier turns keep their reasoning, as Qwen recommends for agents. It also keeps each request a prefix of the next, so the cache hits.
 - 8 GB in-memory cache on top of the SSD cache. Measured on a 21K-token context: a cache hit takes 0.3 s (2.2 s from the SSD alone, 0.7 s in LM Studio). After a restart the SSD cache still answers in 2.2 s, where LM Studio reads the whole context again (28 s).
