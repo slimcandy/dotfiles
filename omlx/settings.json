@@ -1,6 +1,14 @@
 {
+  "version": "1.0",
   "server": { "host": "0.0.0.0", "port": 8000 },
   "model": { "model_dirs": ["~/.omlx/models"], "model_dir": "~/.omlx/models" },
-  "sampling": { "max_context_window": 131072 },
+  "sampling": {
+    "max_context_window": 131072,
+    "max_tokens": 32768,
+    "temperature": 0.6,
+    "top_p": 0.95,
+    "top_k": 20,
+    "repetition_penalty": 1.0
+  },
   "cache": { "enabled": true, "hot_cache_max_size": "8GB" }
 }
